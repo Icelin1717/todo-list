@@ -6,7 +6,8 @@ export function TodoList() {
   const [input, setInput] = useState('');
   const [nextId, setNextId] = useState(0);
 
-  function handleAddTask() {
+  function handleAdd() {
+    if(input === '') return;
     tasksDispatch({
       type: 'add',
       id: nextId,
@@ -17,6 +18,7 @@ export function TodoList() {
   }
   
   function handleEdit(id, name) {
+    if(name === '') return;
     tasksDispatch({
       type: 'edit',
       id: id,
@@ -34,7 +36,7 @@ export function TodoList() {
   return (
     <div>
       <input value={input} onChange={e => setInput(e.target.value)}/>
-      <button onClick={() => handleAddTask()}>
+      <button onClick={() => handleAdd()}>
         Add
       </button>
 
