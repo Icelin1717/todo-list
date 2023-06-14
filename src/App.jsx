@@ -1,4 +1,3 @@
-import { useState, useReducer } from 'react'
 import { TodoList } from './TodoList.jsx'
 import './App.css'
 
