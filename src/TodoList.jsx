@@ -3,30 +3,47 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 
-function TodoList() {
+export function TodoList() {
   const [tasks, tasksDispatch] = useReducer(taskReducer, []);
   const [input, setInput] = useState('');
   const [nextId, setNextId] = useState(0);
 
+  function handleAddTask() {
+    tasksDispatch({
+      type: 'add',
+      id: nextId,
+      name: input,
+    });
+    setInput('');
+    setNextId(nextId + 1);
+  }
+  
+  function handleEdit(id, name) {
+    tasksDispatch({
+      type: 'edit',
+      id: id,
+      name: name,
+    });
+  }
+
+  function handleDelete(id) {
+    tasksDispatch({
+      type: 'delete',
+      id: id
+    });
+  }
+  
   return (
     <div>
       <input value={input} onChange={e => setInput(e.target.value)}/>
-      <button onClick={() => {
-        tasksDispatch({
-          type: 'add',
-          id: nextId,
-          name: input,
-        });
-        setInput('');
-        setNextId(nextId + 1)
-      }}>
+      <button onClick={() => handleAddTask()}>
         Add
       </button>
 
       {
         tasks.map(task => {
           return (
-            <Todo id={task.id} name={task.name} tasksDispatch={tasksDispatch} key={task.id}/>
+            <Todo id={task.id} name={task.name} handleEdit={handleEdit} handleDelete={handleDelete} key={task.id}/>
           )
         })
       }
@@ -34,7 +51,7 @@ function TodoList() {
   )
 }
 
-function Todo({ id, name, tasksDispatch }) {
+function Todo({ id, name, handleEdit, handleDelete }) {
   const [edit, setEdit] = useState(false)
 
   return (
@@ -43,12 +60,7 @@ function Todo({ id, name, tasksDispatch }) {
       {edit ? (
         <input
           value={name}
-          onChange={e => tasksDispatch({
-            type: 'edit',
-            id: id,
-            name: e.target.value,
-          }
-        )}/>
+          onChange={e => handleEdit(id, e.target.value)}/>
       ) : (
         name
       )}
@@ -59,12 +71,7 @@ function Todo({ id, name, tasksDispatch }) {
       }}>
         {edit ? 'Save' : 'Edit'}
       </button>
-      <button onClick={() => {
-        tasksDispatch({
-          type: 'delete',
-          id: id
-        })
-      }}>
+      <button onClick={() => handleDelete(id)}>
         Delete
       </button>
     </div>
