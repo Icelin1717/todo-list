@@ -1,9 +1,9 @@
-import { useState, useReducer } from 'react'
+import { useState, useReducer, useEffect } from 'react'
 
-export function TodoList() {
-  const [tasks, tasksDispatch] = useReducer(taskReducer, []);
+export function TodoList({ initialTasks }) {
+  const [tasks, tasksDispatch] = useReducer(taskReducer, initialTasks);
   const [input, setInput] = useState('');
-  const [nextId, setNextId] = useState(0);
+  const [nextId, setNextId] = useState(initialTasks.length);
 
   function handleAdd() {
     if(input === '') return;
@@ -38,7 +38,11 @@ export function TodoList() {
       id: id
     })
   }
-  
+
+  useEffect(() => {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+  }, [tasks])
+
   return (
     <div>
       <input value={input} onChange={e => setInput(e.target.value)}/>
@@ -94,6 +98,10 @@ function Todo({ task, handleCheck, handleEdit, handleDelete }) {
 
 function taskReducer(tasks, action) {
   switch(action.type) {
+
+    case 'restore': {
+      return action.tasks
+    }
 
     case 'add': {
       return [
