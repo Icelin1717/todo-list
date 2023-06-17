@@ -1,12 +1,12 @@
-import { useState, useReducer } from 'react'
-import './App.css'
+import { useState, useReducer, useEffect } from 'react'
 
-export function TodoList() {
-  const [tasks, tasksDispatch] = useReducer(taskReducer, []);
+export function TodoList({ initialTasks }) {
+  const [tasks, tasksDispatch] = useReducer(taskReducer, initialTasks);
   const [input, setInput] = useState('');
-  const [nextId, setNextId] = useState(0);
+  const [nextId, setNextId] = useState(initialTasks.length);
 
-  function handleAddTask() {
+  function handleAdd() {
+    if(input === '') return;
     tasksDispatch({
       type: 'add',
       id: nextId,
@@ -17,6 +17,7 @@ export function TodoList() {
   }
   
   function handleEdit(id, name) {
+    if(name === '') return;
     tasksDispatch({
       type: 'edit',
       id: id,
@@ -30,18 +31,29 @@ export function TodoList() {
       id: id
     });
   }
-  
+
+  function handleCheck(id) {
+    tasksDispatch({
+      type: 'check',
+      id: id
+    })
+  }
+
+  useEffect(() => {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+  }, [tasks])
+
   return (
     <div>
       <input value={input} onChange={e => setInput(e.target.value)}/>
-      <button onClick={() => handleAddTask()}>
+      <button onClick={() => handleAdd()}>
         Add
       </button>
 
       {
         tasks.map(task => {
           return (
-            <Todo id={task.id} name={task.name} handleEdit={handleEdit} handleDelete={handleDelete} key={task.id}/>
+            <Todo task={task} handleCheck={handleCheck} handleEdit={handleEdit} handleDelete={handleDelete} key={task.id}/>
           )
         })
       }
@@ -49,12 +61,20 @@ export function TodoList() {
   )
 }
 
-function Todo({ id, name, handleEdit, handleDelete }) {
+function Todo({ task, handleCheck, handleEdit, handleDelete }) {
   const [edit, setEdit] = useState(false)
+
+  const id = task.id
+  const name = task.name
+  const checked = task.checked
 
   return (
     <div>
-      <input type='checkbox'/>
+      <input  
+        type='checkbox'
+        checked={checked}
+        onChange={() => handleCheck(id)}
+        />
       {edit ? (
         <input
           value={name}
@@ -79,15 +99,34 @@ function Todo({ id, name, handleEdit, handleDelete }) {
 function taskReducer(tasks, action) {
   switch(action.type) {
 
+    case 'restore': {
+      return action.tasks
+    }
+
     case 'add': {
       return [
         ...tasks,
         {
           id: action.id,
           name: action.name,
+          checked: false,
         }
       ]
     };
+
+    case 'check': {
+      return tasks.map(task => {
+        if(task.id === action.id) {
+          return {
+            id: task.id,
+            name: task.name,
+            checked: !task.checked,
+          }
+        } else {
+          return task;
+        }
+      }) 
+    }
 
     case 'delete': {
       return tasks.filter(task => {
@@ -101,6 +140,7 @@ function taskReducer(tasks, action) {
           return {
             id: task.id,
             name: action.name,
+            checked: task.checked,
           };
         } else {
           return task;
